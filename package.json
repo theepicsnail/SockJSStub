@@ -1,0 +1,27 @@
+{
+  "name": "SockJSStub",
+  "version": "0.1.0",
+  "description": "SockJS Stub for RPC commands",
+  "main": "SockJSStub.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/theepicsnail/SockJSStub.git"
+  },
+  "keywords": [
+    "SockJS",
+    "Stub",
+    "Rpc"
+  ],
+  "author": "theepicsnail",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/theepicsnail/SockJSStub/issues"
+  },
+  "homepage": "https://github.com/theepicsnail/SockJSStub",
+  "dependencies": {
+    "sockjs": "^0.3.9"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "name": "SockJSStub",
+  "version": "0.1.0",
+  "homepage": "https://github.com/theepicsnail/SockJSStub",
+  "authors": [
+    "theepicsnail <theepicsnail@gmail.com>"
+  ],
+  "description": "Sock JS Stub for RPCs",
+  "main": "SockJSStub.js",
+  "keywords": [
+    "sockjs",
+    "rpc",
+    "stub"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "sockjs": "~0.3.4"
+  }
+}
