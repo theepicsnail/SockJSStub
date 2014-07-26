@@ -148,4 +148,6 @@
       this.handlers[eventName] = (this.handlers[eventName] || []).concat([callback]);
     }
   };
+  exports.Stub = Stub;
+  exports.SockJSStub = SockJJStub;
 }(typeof exports === 'undefined'? this.SockJSStub={}: exports));
