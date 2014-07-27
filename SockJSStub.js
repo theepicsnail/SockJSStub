@@ -1,6 +1,27 @@
+// Node versions might not have Promises
+if (typeof require !== 'undefined') {
+  if (typeof Promise === 'undefined') {
+    Promise = require('es6-promise').Promise;
+  }
+}
 (function(exports) {
+
   function SockJSStub(sockjs) {
-    return new Stub(sockjs);
+    var stub = new Stub();
+    stub.send = sockjs.send.bind(sockjs);
+    var oldOnMessage = sockjs.onmessage;
+    sockjs.onmessage = function(e) {
+      if(!stub.onMessage(e.data) && oldOnMessage) {
+        oldOnMessage(e);
+      }
+    };
+    return stub;
+  }
+  function SockJSServerStub(connection) {
+    var stub = new Stub();
+    stub.send = connection.write.bind(connection);
+    connection.on('data', stub.onMessage.bind(stub));
+    return stub;
   }
 
   function Stub(socket) {
@@ -24,10 +45,6 @@
     // External api:
     this.on = this.on.bind(this);
     this.call = this.call.bind(this);
-
-    // Wire up socket
-    this.send = socket.send; // accepts a string
-    socket.onmessage = this.onMessage.bind(this);
   }
 
   Stub.prototype = {
@@ -46,11 +63,12 @@
       return new Promise(function (ret) {
         var id = this.rpcId ++;
         this.pendingRpcs[id] = ret;
-        this.send({ rpcId: id,
+        blob = JSON.stringify({ rpcId: id,
                     direction: 'request',
                     eventName: eventName,
                     args: args });
-      });
+        this.send(blob);
+      }.bind(this));
     },
 
     callHandler: function(handler, args, id) {
@@ -83,19 +101,21 @@
               didn't return anything, and they didn't ask for the callback, so it's void.
         TODO handle exceptions and forward them to the .catch half of the promise
       */
+      var send = this.send;
       setTimeout(function () {
         new Promise(function(accept) {
           var ret;
           try {
             // allow 'this.return' to be called for async functions
             ret = handler.apply({'return': accept}, args);
+
           } finally {
             if(ret !== undefined) {
               accept(ret);
             }
           }
         }).then(function (value) {
-          this.send(JSON.stringify({ rpcId: id,
+          send(JSON.stringify({ rpcId: id,
               direction: 'reply', value: value}));
         });
       }, 0);
@@ -118,17 +138,20 @@
         direction = obj.direction;
       } catch (error) {
         console.warn("Couldn't parse message:", message, error);
-        return;
+        return false;
       }
-
       // rpc request {rpcId:0, direction:'request', eventName: 'asdf', args:[] }
       // rpc reply   {rpcId:0, direction:'reply', value:'something' }
 
       if (obj.direction === 'request') { // Handle rpc request
-        var handlers = this.handlers[obj.eventName];
+        var handlers = this.handlers[obj.eventName] || [];
         var hid;
-        for (hid = handlers.length-1; hid > 0; --hid) {
-          callHandler(handlers[hid], obj.args, id);
+        if (handlers.length === 0) {
+          console.warn("Received rpc request for unbounded event:", obj);
+        }
+
+        for (hid = handlers.length-1; hid >= 0; --hid) {
+          this.callHandler(handlers[hid], obj.args, id);
         }
       }
 
@@ -137,6 +160,8 @@
           console.warn("Got reply for non-existant rpc:", obj);
         })(obj.value);
       }
+
+      return true;
     },
 
     on: function (eventName, callback) {
@@ -149,5 +174,6 @@
     }
   };
   exports.Stub = Stub;
-  exports.SockJSStub = SockJJStub;
+  exports.SockJSStub = SockJSStub;
+  exports.SockJSServerStub = SockJSServerStub;
 }(typeof exports === 'undefined'? this.SockJSStub={}: exports));

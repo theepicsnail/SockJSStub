@@ -1,0 +1,20 @@
+{
+  "name": "example",
+  "version": "0.0.0",
+  "homepage": "https://github.com/theepicsnail/SockJSStub",
+  "authors": [
+    "theepicsnail <theepicsnail@gmail.com>"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "sockjs": "~0.3.4",
+    "SockJSStub": "git://github.com/theepicsnail/SockJSStub.git"
+  }
+}
